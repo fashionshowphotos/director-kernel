@@ -1,0 +1,2 @@
+Build a multi-tenant authentication service with OAuth2,
+JWT sessions, rate limiting, and audit logging.

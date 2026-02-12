@@ -1,0 +1,30 @@
+{
+  "name": "web-ai-full",
+  "intent": "Create a web-based AI orchestrator that uses browser automation (Layer 46).",
+  "stages": [
+    {
+      "name": "design",
+      "targets": [
+        {
+          "name": "architecture"
+        }
+      ]
+    },
+    {
+      "name": "contracts",
+      "targets": [
+        {
+          "name": "contract"
+        }
+      ]
+    },
+    {
+      "name": "implementation",
+      "targets": [
+        {
+          "name": "code"
+        }
+      ]
+    }
+  ]
+}

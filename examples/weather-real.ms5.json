@@ -1,0 +1,41 @@
+{
+    "name": "weather-app-real",
+    "intent": "Build a production-ready weather dashboard backend. It must fetch REAL data from OpenWeatherMap API using axios. It must NOT use mock data.",
+    "global_config": {
+        "language": "typescript",
+        "runtime": "nodejs"
+    },
+    "stages": [
+        {
+            "name": "design",
+            "targets": [
+                {
+                    "name": "architecture"
+                }
+            ]
+        },
+        {
+            "name": "contracts",
+            "targets": [
+                {
+                    "name": "contracts"
+                }
+            ]
+        },
+        {
+            "name": "implementation",
+            "targets": [
+                {
+                    "name": "code"
+                }
+            ]
+        }
+    ],
+    "constraints": [
+        "Must use 'axios' for HTTP requests",
+        "Must use 'dotenv' for configuration",
+        "Must read OPENWEATHER_API_KEY from process.env",
+        "Must throw error if API key is missing",
+        "NO MOCK DATA ALLOWED - Logic must perform actual network I/O"
+    ]
+}

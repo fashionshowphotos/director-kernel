@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.test-build/
+*.js.map
+*.d.ts.map
+debug_transform.log
+last_reply.json
+output/
+.director-traces/
+test_projects/
+AGENTS.md

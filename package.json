@@ -1,0 +1,67 @@
+{
+  "name": "director-kernel",
+  "version": "6.4.2",
+  "description": "Intent compiler that transforms human intent into working software through layered constraints (MS5→MS4→MS3→MS2)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "README.md",
+    "SETUP_GUIDE.md",
+    "COMPILER_CONTRACT.md",
+    "mc_schema.json",
+    "ms3_contracts.json",
+    "mc_family/tier_contracts.json",
+    "LICENSE"
+  ],
+  "bin": {
+    "dirkernel": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:clean": "npm run clean && npm run build",
+    "dev": "tsc --watch",
+    "test": "node scripts/ensure-tests.cjs && tsc -p tsconfig.test.json && node --test .test-build/tests/**/*.test.js .test-build/src/**/*.test.js",
+    "test:quick": "node scripts/ensure-tests.cjs && node --test .test-build/tests/**/*.test.js .test-build/src/**/*.test.js",
+    "clean": "node -e \"require('fs').rmSync('dist', {recursive: true, force: true})\"",
+    "start": "node dist/cli.js",
+    "prepublishOnly": "npm run build:clean && npm test",
+    "lint": "tsc --noEmit",
+    "check": "npm run lint && npm test",
+    "init": "node dist/cli.js init",
+    "status": "node dist/cli.js status",
+    "vscode:install": "powershell -ExecutionPolicy Bypass -File scripts/install_vscode_extension.ps1"
+  },
+  "keywords": [
+    "code-generation",
+    "llm",
+    "compiler",
+    "intent",
+    "ms5",
+    "ai",
+    "openrouter",
+    "architecture"
+  ],
+  "author": "Coherent Light Designs",
+  "license": "SEE LICENSE IN LICENSE",
+  "homepage": "https://github.com/fashionshowphotos/director-kernel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fashionshowphotos/director-kernel.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fashionshowphotos/director-kernel/issues"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "lru-cache": "^11.0.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

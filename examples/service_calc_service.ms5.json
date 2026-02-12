@@ -1,0 +1,15 @@
+{
+  "name": "service_calc_service",
+  "description": "A simple calculator API with add and subtract endpoints",
+  "stages": [
+    {
+      "name": "implementation",
+      "targets": [
+        {
+          "name": "main.py",
+          "description": "Main FastAPI entry point for calc_service"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "schema_version": "tier_contracts_v1",
+  "description": "Declarative tier invariants for MC2 enforcement. These are checked against MS3 contracts, not MS2 code.",
+  "tiers": {
+    "toy": {
+      "level": 1,
+      "name": "Toy",
+      "description": "Quick prototypes, learning exercises, throwaway code",
+      "must_hold": [],
+      "should_hold": [
+        "At least one entry point defined"
+      ],
+      "may_omit": [
+        "Tests",
+        "Error taxonomy",
+        "Config externalization",
+        "Logging",
+        "Input validation"
+      ]
+    },
+    "personal": {
+      "level": 2,
+      "name": "Personal",
+      "description": "Side projects, personal tools, single-user applications",
+      "must_hold": [
+        "At least one entry point defined",
+        "Basic error handling present"
+      ],
+      "should_hold": [
+        "Config via environment or file (not hardcoded)",
+        "Core behaviors have error modes enumerated"
+      ],
+      "may_omit": [
+        "Comprehensive tests",
+        "Security hardening",
+        "Audit logging"
+      ]
+    },
+    "experimental": {
+      "level": 3,
+      "name": "Experimental",
+      "description": "Internal tools, team prototypes, pre-production systems",
+      "must_hold": [
+        "All public interfaces have type signatures",
+        "Error modes enumerated for core behaviors",
+        "Config sources explicit (env, file, or defaults)",
+        "No hardcoded secrets"
+      ],
+      "should_hold": [
+        "Tests present for core logic",
+        "Logging for errors and key operations",
+        "Input validation on public interfaces"
+      ],
+      "may_omit": [
+        "Full test coverage",
+        "Threat model",
+        "Audit trail"
+      ]
+    },
+    "production": {
+      "level": 4,
+      "name": "Production",
+      "description": "Customer-facing systems, business-critical applications",
+      "must_hold": [
+        "All public interfaces have type signatures",
+        "All error modes enumerated and documented",
+        "Config sources explicit (env, file, or defaults)",
+        "No hardcoded secrets",
+        "Tests present for core logic",
+        "Deterministic startup (no race conditions)",
+        "Graceful shutdown handling",
+        "Input validation on all public interfaces",
+        "Logging for errors and key operations"
+      ],
+      "should_hold": [
+        "Health check endpoint or equivalent",
+        "Structured logging (JSON or similar)",
+        "Dependency versions pinned",
+        "Error responses do not leak internal details"
+      ],
+      "may_omit": [
+        "Full threat model",
+        "Compliance scaffolding",
+        "Multi-region support"
+      ]
+    },
+    "enterprise": {
+      "level": 5,
+      "name": "Enterprise",
+      "description": "Regulated systems, multi-tenant platforms, high-security applications",
+      "must_hold": [
+        "All public interfaces have type signatures",
+        "All error modes enumerated and documented",
+        "Config sources explicit (env, file, or defaults)",
+        "No hardcoded secrets",
+        "Tests present for core logic",
+        "Deterministic startup (no race conditions)",
+        "Graceful shutdown handling",
+        "Input validation on all public interfaces",
+        "Logging for errors and key operations",
+        "Threat model documented",
+        "Audit trail for security-relevant operations",
+        "Dependency versions pinned",
+        "Defense-in-depth (multiple validation layers)",
+        "Explicit failure modes for all external dependencies",
+        "Rate limiting or resource bounds on public interfaces"
+      ],
+      "should_hold": [
+        "Compliance controls documented",
+        "Data classification labels",
+        "Encryption at rest for sensitive data",
+        "Encryption in transit enforced"
+      ],
+      "may_omit": []
+    }
+  },
+  "enforcement_rules": {
+    "must_hold": {
+      "severity": "error",
+      "action": "block_generation",
+      "description": "Generation fails if any must_hold invariant is not satisfied in MS3"
+    },
+    "should_hold": {
+      "severity": "warning",
+      "action": "log_and_continue",
+      "description": "Generation proceeds but warnings are logged"
+    },
+    "may_omit": {
+      "severity": "info",
+      "action": "none",
+      "description": "Explicitly allowed to be missing at this tier"
+    }
+  },
+  "invariant_checks": {
+    "all_public_interfaces_typed": {
+      "description": "Every interface in METHODS has explicit TypeScript signatures",
+      "check": "ms3.METHODS.every(m => m.includes(':') && (m.includes('Promise<') || m.includes('void') || m.includes('string') || m.includes('number') || m.includes('boolean') || m.includes('{')))"
+    },
+    "error_modes_enumerated": {
+      "description": "METHODS or DOES references error types, and those types are defined",
+      "check": "ms3.METHODS.some(m => m.includes('Error') || m.includes('error')) || ms3.DOES.some(d => d.toLowerCase().includes('error'))"
+    },
+    "no_hardcoded_secrets": {
+      "description": "DENIES includes prohibition on hardcoded secrets",
+      "check": "ms3.DENIES.some(d => d.toLowerCase().includes('secret') || d.toLowerCase().includes('credential') || d.toLowerCase().includes('api key'))"
+    },
+    "config_sources_explicit": {
+      "description": "DOES or METHODS references configuration mechanism",
+      "check": "ms3.DOES.some(d => d.toLowerCase().includes('config') || d.toLowerCase().includes('environment')) || ms3.METHODS.some(m => m.toLowerCase().includes('config'))"
+    },
+    "tests_present": {
+      "description": "DOES mentions testing or test-related behavior",
+      "check": "ms3.DOES.some(d => d.toLowerCase().includes('test')) || ms3.METHODS.some(m => m.toLowerCase().includes('test'))"
+    },
+    "input_validation": {
+      "description": "DOES or DENIES mentions input validation",
+      "check": "ms3.DOES.some(d => d.toLowerCase().includes('validat')) || ms3.DENIES.some(d => d.toLowerCase().includes('invalid'))"
+    },
+    "graceful_shutdown": {
+      "description": "DOES or METHODS mentions shutdown or cleanup",
+      "check": "ms3.DOES.some(d => d.toLowerCase().includes('shutdown') || d.toLowerCase().includes('cleanup') || d.toLowerCase().includes('close')) || ms3.METHODS.some(m => m.toLowerCase().includes('close') || m.toLowerCase().includes('shutdown'))"
+    },
+    "logging_present": {
+      "description": "DOES mentions logging",
+      "check": "ms3.DOES.some(d => d.toLowerCase().includes('log'))"
+    },
+    "threat_model_documented": {
+      "description": "DENIES includes security-related constraints",
+      "check": "ms3.DENIES.filter(d => d.toLowerCase().includes('must not') && (d.toLowerCase().includes('attack') || d.toLowerCase().includes('inject') || d.toLowerCase().includes('unauthorized') || d.toLowerCase().includes('bypass'))).length >= 2"
+    },
+    "audit_trail": {
+      "description": "DOES mentions audit or traceability",
+      "check": "ms3.DOES.some(d => d.toLowerCase().includes('audit') || d.toLowerCase().includes('trace'))"
+    }
+  }
+}

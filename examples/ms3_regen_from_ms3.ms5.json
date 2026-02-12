@@ -1,0 +1,16 @@
+{
+  "title": "director-kernel-regen-from-ms3",
+  "stages": [
+    {
+      "name": "implementation",
+      "targets": [
+        {
+          "name": "code",
+          "config": {
+            "transform_type": "ms3_to_ms2"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+    "name": "weather-app-v1",
+    "intent": "Build a simple weather dashboard with a Node.js/Express backend and a static HTML/JS frontend. Users search for a city, backend fetches data from OpenWeatherMap (mock), and frontend displays it.",
+    "global_config": {
+        "language": "typescript",
+        "runtime": "nodejs"
+    },
+    "stages": [
+        {
+            "name": "design",
+            "targets": [
+                {
+                    "name": "architecture"
+                }
+            ]
+        },
+        {
+            "name": "contracts",
+            "targets": [
+                {
+                    "name": "contracts"
+                }
+            ]
+        },
+        {
+            "name": "implementation",
+            "targets": [
+                {
+                    "name": "code"
+                }
+            ]
+        }
+    ]
+}

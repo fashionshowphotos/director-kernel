@@ -1,0 +1,147 @@
+{
+  "version": "1.0.0",
+  "created": "2026-01-22",
+  "description": "Director Compiler Test Corpus - Evidence collection for regression, correctness, and patent support",
+  "tests": [
+    {
+      "id": "01_large_legacy",
+      "name": "Large Legacy Single File",
+      "category": "large_legacy",
+      "inputPath": "inputs/01_large_legacy/legacy_monolith.ts",
+      "inputLOC": 850,
+      "description": "2500+ LOC legacy TypeScript monolith with mixed patterns (callbacks, promises, async/await), global state, tight coupling, and complex business logic",
+      "flags": ["--tier", "experimental", "--mode", "semantic_governed"],
+      "expectedOutcome": "SUCCESS",
+      "expectedBehavior": [
+        "Extract semantic structure from large file",
+        "Preserve business logic invariants",
+        "Identify module boundaries within monolith",
+        "Generate valid MS3 contracts"
+      ],
+      "successCriteria": [
+        "MS3 contains DOES/DENIES/METHODS",
+        "No hallucinated architecture",
+        "Invariants match source semantics"
+      ]
+    },
+    {
+      "id": "02_defunct_code",
+      "name": "Defunct Code with Broken Imports",
+      "category": "defunct_code",
+      "inputPath": "inputs/02_defunct_code/broken_service.ts",
+      "inputLOC": 310,
+      "description": "Code with broken/missing imports, deprecated APIs, references to non-existent modules",
+      "flags": ["--tier", "experimental", "--mode", "semantic_governed"],
+      "expectedOutcome": "SUCCESS",
+      "expectedBehavior": [
+        "Extract semantics despite broken dependencies",
+        "Identify what the code INTENDS to do",
+        "Not fail on missing imports",
+        "Preserve logical structure"
+      ],
+      "successCriteria": [
+        "Semantic extraction succeeds",
+        "MS3 reflects intended behavior",
+        "Does not hallucinate missing dependencies"
+      ]
+    },
+    {
+      "id": "03_security_auth",
+      "name": "Security-Sensitive Auth Module",
+      "category": "security_auth",
+      "inputPath": "inputs/03_security_auth/auth_handler.ts",
+      "inputLOC": 620,
+      "description": "Authentication module with password hashing, JWT management, session handling, rate limiting, CSRF protection",
+      "flags": ["--tier", "production", "--mode", "semantic_governed"],
+      "expectedOutcome": "SUCCESS",
+      "expectedBehavior": [
+        "Preserve security invariants",
+        "Identify cryptographic operations",
+        "Maintain constant-time comparison patterns",
+        "Preserve rate limiting logic"
+      ],
+      "successCriteria": [
+        "Security constants preserved in MS3",
+        "DENIES includes security violations",
+        "Cryptographic patterns identified",
+        "No security downgrade in contracts"
+      ]
+    },
+    {
+      "id": "04_framework_heavy",
+      "name": "Framework-Heavy Express Service",
+      "category": "framework_heavy",
+      "inputPath": "inputs/04_framework_heavy/express_api.ts",
+      "inputLOC": 580,
+      "description": "Express.js REST API with complex middleware chain, route handlers, validation, database patterns",
+      "flags": ["--tier", "experimental", "--mode", "semantic_governed"],
+      "expectedOutcome": "SUCCESS",
+      "expectedBehavior": [
+        "Extract business logic from framework boilerplate",
+        "Identify route handlers and their contracts",
+        "Preserve middleware semantics",
+        "Not hallucinate Express-specific architecture"
+      ],
+      "successCriteria": [
+        "MS3 describes API contracts, not Express internals",
+        "Route semantics preserved",
+        "No framework-specific hallucination"
+      ]
+    },
+    {
+      "id": "05_directory_input",
+      "name": "Whole Directory Input (Expected Refusal)",
+      "category": "directory_input",
+      "inputPath": "inputs/05_directory_input/",
+      "inputLOC": 150,
+      "inputFiles": 3,
+      "description": "Multi-file directory with cross-module dependencies - tests composition boundary",
+      "flags": ["--tier", "enterprise", "--mode", "semantic_governed"],
+      "expectedOutcome": "REFUSED",
+      "expectedBehavior": [
+        "Refuse with STUBS_DETECTED or NEED_MORE_CONTEXT",
+        "Not collapse module boundaries",
+        "Not hallucinate unified architecture",
+        "Honest about composition limitations"
+      ],
+      "successCriteria": [
+        "Compiler refuses honestly",
+        "Error message indicates composition boundary",
+        "No partial/incorrect output"
+      ]
+    }
+  ],
+  "categories": {
+    "large_legacy": {
+      "description": "Large single-file legacy codebases (2k-5k LOC)",
+      "purpose": "Test semantic extraction at scale"
+    },
+    "defunct_code": {
+      "description": "Code with broken imports, deprecated APIs",
+      "purpose": "Test extraction despite broken dependencies"
+    },
+    "security_auth": {
+      "description": "Security-sensitive code (hashing, auth, crypto)",
+      "purpose": "Test preservation of security invariants"
+    },
+    "framework_heavy": {
+      "description": "Framework-heavy services (Express, React, etc.)",
+      "purpose": "Test extraction without framework hallucination"
+    },
+    "directory_input": {
+      "description": "Multi-file directory inputs",
+      "purpose": "Test composition boundary and honest refusal"
+    }
+  },
+  "usage": {
+    "runAll": "npx ts-node test_corpus/harness.ts --all",
+    "runSingle": "npx ts-node test_corpus/harness.ts --test <test_id>",
+    "archive": "npx ts-node test_corpus/harness.ts --archive"
+  },
+  "evidenceValue": {
+    "regressionSuite": "Ensures compiler behavior doesn't regress",
+    "proofOfCorrectness": "Documents what the compiler can and cannot do",
+    "patentSupport": "Provides dated evidence of capabilities",
+    "confidenceAnchor": "Establishes baseline for future development"
+  }
+}

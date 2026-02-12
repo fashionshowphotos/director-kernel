@@ -1,0 +1,70 @@
+{
+  "mc_family": {
+    "levels": [
+      {
+        "level": "MC4",
+        "name": "Orientation",
+        "required_fields": {
+          "system": "Director Kernel",
+          "version": "v6",
+          "one_line_summary": "Local intent compiler that transforms MS5 -> MC4 -> MC3 -> MS2 and writes a runnable codebase.",
+          "key_constraints": [
+            "All model outputs must be valid JSON only (no prose).",
+            "Production-quality code (correctness, maintainability, tests).",
+            "Minimal security hardening: only basic best practices unless explicitly required.",
+            "Never modify the user's working repo by default; write outputs to an output folder.",
+            "Deterministic, cacheable transforms keyed by content hashes and context hash."
+          ],
+          "main_methods": [
+            "CLI: dirkernel init",
+            "CLI: dirkernel build <spec> [--tier <tier>] [--input-ms4 <mc4.json>]",
+            "CLI: dirkernel status"
+          ],
+          "components": [
+            {
+              "name": "KernelOrchestrator",
+              "responsibilities": [
+                "Acquire singleton lock and manage build lifecycle",
+                "Compute execution plan and run targets",
+                "Persist artifacts, checkpoints, and cost records",
+                "Export build output"
+              ]
+            },
+            {
+              "name": "TransformEngine",
+              "responsibilities": [
+                "Run transform types: ms5_to_ms4, ms4_to_ms3, ms3_to_ms2",
+                "Validate against JSON schemas",
+                "Apply tiered build policies and quality gates",
+                "Iterative patch loop for MS2 quality"
+              ]
+            },
+            {
+              "name": "ModelRouter",
+              "responsibilities": [
+                "Execute model calls via configured provider",
+                "Track token usage and cost",
+                "Retry and normalize responses"
+              ]
+            },
+            {
+              "name": "ArtifactStore",
+              "responsibilities": [
+                "Content-addressed storage (sha256) for artifacts",
+                "Provide artifact retrieval for transforms and exports"
+              ]
+            }
+          ],
+          "data_flow": [
+            "MS5 spec ingested as artifact",
+            "MC4 (orientation) produced or supplied as input",
+            "MC3 (contracts) produced from MC4",
+            "MS2 (code files) produced from MC3",
+            "Artifacts stored and referenced by build"
+          ]
+        },
+        "example": {}
+      }
+    ]
+  }
+}

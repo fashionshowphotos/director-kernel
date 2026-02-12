@@ -1,0 +1,33 @@
+{
+    "name": "secure-todo-app",
+    "description": "A secure, offline-first Todo application demonstrating MC2.5 contract enforcement. It should include task CRUD, priority sorting, and local storage persistence.",
+    "stages": [
+        {
+            "name": "foundation",
+            "targets": [
+                {
+                    "name": "types-and-storage",
+                    "description": "Define TypeScript interfaces for Task and storage logic using localStorage."
+                }
+            ]
+        },
+        {
+            "name": "interface",
+            "targets": [
+                {
+                    "name": "cli-ui",
+                    "description": "A simple command-line interface or text-based UI to interact with the Todo list."
+                }
+            ]
+        },
+        {
+            "name": "code_generation",
+            "targets": [
+                {
+                    "name": "full-implementation",
+                    "description": "Generate the full application code based on the design."
+                }
+            ]
+        }
+    ]
+}

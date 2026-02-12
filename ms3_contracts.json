@@ -1,0 +1,395 @@
+{
+  "artifact_type": "ms3_contracts",
+  "contract_version": "6.3.3",
+  "execution_model": "single_process_in_kernel",
+  "global_invariants": {
+    "pipeline_order": [
+      "MS5",
+      "MS4",
+      "MS3",
+      "MS2"
+    ],
+    "iteration_direction": "upstream_only",
+    "traceability_over_determinism": true,
+    "single_source_of_truth": "sqlite",
+    "budget_approval_explicit": true,
+    "no_partial_outputs": true,
+    "ai_automation": {
+      "confidence_threshold_auto_proceed": 0.95,
+      "confidence_threshold_escalate": 0.5,
+      "max_auto_retry_attempts": 3,
+      "retry_backoff_ms": [
+        500,
+        1000,
+        2000
+      ],
+      "audit_trail_format": "JSONL",
+      "human_boundary": "MS4"
+    }
+  },
+  "error_taxonomy": {
+    "USER_ERROR": "Invalid or contradictory intent/specification",
+    "USER_ACTION_REQUIRED": "Kernel exhausted automated recovery options",
+    "MODEL_ERROR": "LLM output invalid after retries",
+    "INFRA_ERROR": "Filesystem, database, or network failure",
+    "BUDGET_PAUSE": "Soft cost limit reached",
+    "LOW_CONFIDENCE": "AI output below confidence threshold - escalation triggered"
+  },
+  "performance_constraints": {
+    "max_transform_duration_seconds": 300,
+    "max_model_call_duration_seconds": 120,
+    "max_static_analysis_duration_seconds": 60,
+    "max_concurrent_model_calls": 6,
+    "max_memory_mb": 4096
+  },
+  "checkpoint_policy": {
+    "key": [
+      "build_id",
+      "transform_type",
+      "target_id"
+    ],
+    "fingerprint": "context_hash",
+    "scope": "per_build",
+    "auto_resume_allowed_for": [
+      "CRASHED"
+    ],
+    "manual_resume_required_for": [
+      "BUDGET_PAUSE"
+    ]
+  },
+  "truncation_policy": {
+    "ratio_definition": "1 - (tokens_sent / tokens_requested)",
+    "warn_threshold_percent": 20,
+    "fail_threshold_percent": 50,
+    "on_fail": "USER_ACTION_REQUIRED"
+  },
+  "event_bus": {
+    "execution_model": "in_process_sync",
+    "backpressure": "block_sender",
+    "events": [
+      "token_usage",
+      "artifact_stored",
+      "build_state_changed",
+      "error_raised"
+    ]
+  },
+  "modules": [
+    {
+      "module_id": "initializer",
+      "responsibility": "Bootstrap kernel state and secure configuration.",
+      "must": [
+        "create directory structure",
+        "initialize sqlite schema",
+        "provision secure config store with permissions 0600",
+        "prompt once for API keys if missing"
+      ],
+      "failure_modes": {
+        "init_failed": "INFRA_ERROR"
+      }
+    },
+    {
+      "module_id": "kernel_orchestrator",
+      "responsibility": "Coordinate build lifecycle and enforce the state machine.",
+      "inputs": {
+        "kernel_settings": "object",
+        "requested_action": "build | resume | abort | restart"
+      },
+      "outputs": {
+        "build_id": "uuid",
+        "build_state": "enum"
+      },
+      "must": [
+        "generate build_id using UUIDv4",
+        "enforce singleton execution via lock file",
+        "advance state machine predictably",
+        "auto-resume CRASHED builds only",
+        "halt immediately on BUDGET_PAUSE",
+        "persist all state transitions"
+      ],
+      "must_not": [
+        "reinterpret module errors",
+        "invoke model_router directly"
+      ],
+      "failure_modes": {
+        "lock_conflict": "INFRA_ERROR"
+      }
+    },
+    {
+      "module_id": "artifact_store",
+      "responsibility": "Persist artifacts, logs, checkpoints, and cost records.",
+      "inputs": {
+        "content": "json | string",
+        "kind": "string",
+        "metadata": "object"
+      },
+      "outputs": {
+        "content_hash": "sha256"
+      },
+      "must": [
+        "store artifacts keyed by content_hash",
+        "isolate checkpoints by build_id",
+        "persist logs and metrics",
+        "support snapshot export"
+      ],
+      "failure_modes": {
+        "db_failure": "INFRA_ERROR"
+      }
+    },
+    {
+      "module_id": "concurrency_limiter",
+      "responsibility": "Limit parallel model execution and token spend.",
+      "inputs": {
+        "requested_tokens": "integer"
+      },
+      "must": [
+        "enforce max_concurrent_model_calls",
+        "block when token bucket exhausted"
+      ],
+      "failure_modes": {
+        "limit_exceeded": "BUDGET_PAUSE"
+      }
+    },
+    {
+      "module_id": "model_router",
+      "responsibility": "Execute LLM calls via OpenRouter.",
+      "inputs": {
+        "prompt": "string",
+        "model_id": "string",
+        "settings": "object"
+      },
+      "outputs": {
+        "completion": "string",
+        "token_usage": "object"
+      },
+      "must": [
+        "respect concurrency_limiter",
+        "timeout after max_model_call_duration_seconds",
+        "retry up to 3 times on 429 or 5xx",
+        "emit token_usage event"
+      ],
+      "failure_modes": {
+        "provider_failure": "INFRA_ERROR",
+        "invalid_output": "MODEL_ERROR"
+      }
+    },
+    {
+      "module_id": "context_slicer",
+      "responsibility": "Produce bounded context for model calls.",
+      "inputs": {
+        "target_id": "string",
+        "artifact_hashes": "array",
+        "token_budget": "integer"
+      },
+      "outputs": {
+        "context_payload": "string",
+        "tokens_requested": "integer",
+        "tokens_sent": "integer",
+        "truncation_ratio": "number",
+        "context_hash": "sha256"
+      },
+      "must": [
+        "always include MS5 invariants",
+        "truncate lowest-priority artifacts first",
+        "emit truncation_ratio"
+      ],
+      "failure_modes": {
+        "excessive_truncation": "USER_ACTION_REQUIRED"
+      }
+    },
+    {
+      "module_id": "schema_validator",
+      "responsibility": "Validate artifacts against schemas.",
+      "inputs": {
+        "artifact": "json",
+        "schema_id": "string"
+      },
+      "outputs": {
+        "valid": "boolean",
+        "errors": "array"
+      },
+      "failure_modes": {
+        "schema_invalid": "MODEL_ERROR"
+      }
+    },
+    {
+      "module_id": "transform_engine",
+      "responsibility": "Execute MS-layer transforms.",
+      "inputs": {
+        "upstream_hash": "sha256",
+        "transform_type": "ms5_to_ms4 | ms4_to_ms3 | ms3_to_ms2",
+        "validation_mode": "fast | spec_pass"
+      },
+      "outputs": {
+        "downstream_hash": "sha256"
+      },
+      "must": [
+        "retrieve inputs from artifact_store",
+        "request context via context_slicer",
+        "validate outputs",
+        "persist artifacts"
+      ],
+      "failure_modes": {
+        "validation_failed": "MODEL_ERROR"
+      }
+    },
+    {
+      "module_id": "static_analyzer",
+      "responsibility": "Extract dependency edges using AST parsing only.",
+      "inputs": {
+        "source_tree": "string"
+      },
+      "outputs": {
+        "observed_dependencies": "array",
+        "uncertain_dependencies": "array"
+      },
+      "must": [
+        "run in subprocess sandbox",
+        "timeout after max_static_analysis_duration_seconds"
+      ],
+      "failure_modes": {
+        "analysis_failed": "INFRA_ERROR"
+      }
+    },
+    {
+      "module_id": "dependency_reconciler",
+      "responsibility": "Align declared and observed dependencies.",
+      "inputs": {
+        "declared": "array",
+        "observed": "array"
+      },
+      "outputs": {
+        "status": "match | auto_patched | failed",
+        "ms4_delta": "optional"
+      },
+      "must": [
+        "auto-apply MS4 delta up to 2 attempts",
+        "fail after repeated mismatch"
+      ],
+      "failure_modes": {
+        "unresolvable": "USER_ACTION_REQUIRED"
+      }
+    },
+    {
+      "module_id": "cost_controller",
+      "responsibility": "Track and enforce budget limits.",
+      "inputs": {
+        "token_usage": "object",
+        "budget_limits": "object"
+      },
+      "outputs": {
+        "budget_state": "ok | warn | paused"
+      },
+      "must": [
+        "emit warn at 70%",
+        "block further model calls at 95%",
+        "persist cost records"
+      ],
+      "failure_modes": {
+        "budget_exceeded": "BUDGET_PAUSE"
+      }
+    },
+    {
+      "module_id": "handoff_manager",
+      "responsibility": "Publish MS2 outputs atomically.",
+      "inputs": {
+        "ms2_hash": "sha256",
+        "mode": "git | folder"
+      },
+      "outputs": {
+        "handoff_ref": "string"
+      },
+      "must": [
+        "stage on same filesystem",
+        "commit atomically",
+        "leave staging intact on failure"
+      ],
+      "failure_modes": {
+        "handoff_failed": "INFRA_ERROR"
+      }
+    },
+    {
+      "module_id": "incremental_build_cache",
+      "responsibility": "Cache transform outputs keyed by input hashes, transform version, and model ID.",
+      "inputs": {
+        "content_hash": "sha256",
+        "transform_id": "string",
+        "model_id": "string"
+      },
+      "outputs": {
+        "cached_artifact": "json | string | null",
+        "cache_hit": "boolean"
+      },
+      "must": [
+        "key cache by (input_hashes + transform_version + model_id)",
+        "skip work when inputs are unchanged",
+        "provide cache stats (hit/miss ratio)"
+      ],
+      "failure_modes": {
+        "cache_corruption": "INFRA_ERROR"
+      }
+    },
+    {
+      "module_id": "output_writer",
+      "responsibility": "Write generated code to build folder and produce handoff artifacts.",
+      "inputs": {
+        "validated_files": "array",
+        "build_id": "uuid",
+        "build_manifest_config": "object"
+      },
+      "outputs": {
+        "output_folder_path": "string",
+        "handoff_manifest": "json",
+        "patch_bundle": "optional"
+      },
+      "must": [
+        "write to output/<project>/<build_id>/ folder",
+        "generate IDE handoff manifest",
+        "optionally emit patch bundles for IDE integration",
+        "preserve file permissions and structure"
+      ],
+      "failure_modes": {
+        "write_failed": "INFRA_ERROR"
+      }
+    },
+    {
+      "module_id": "standalone_ui",
+      "responsibility": "Render MS layer views, diffs, and allow user interaction.",
+      "inputs": {
+        "artifact_store": "reference",
+        "build_status_events": "stream"
+      },
+      "outputs": {
+        "user_edits": "json",
+        "build_commands": "string"
+      },
+      "must": [
+        "render MS5/MS4/MS3/MS2 states in separate window",
+        "show tree view of modules and files by layer",
+        "allow MS5 editing and trigger builds",
+        "display build state, errors, and suggested fixes",
+        "show diff view of changes since last compile"
+      ],
+      "failure_modes": {
+        "ui_crash": "INFRA_ERROR"
+      }
+    },
+    {
+      "module_id": "garbage_collector",
+      "responsibility": "Reclaim unused artifacts safely.",
+      "must": [
+        "respect build tags",
+        "retain last 20 builds",
+        "never delete active build data"
+      ]
+    },
+    {
+      "module_id": "shutdown_handler",
+      "responsibility": "Handle SIGINT/SIGTERM cleanly.",
+      "must": [
+        "release locks",
+        "mark build CRASHED",
+        "preserve staging state"
+      ]
+    }
+  ]
+}

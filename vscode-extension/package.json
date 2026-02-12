@@ -1,0 +1,88 @@
+{
+  "name": "director-kernel-vscode",
+  "displayName": "Director Kernel",
+  "description": "Run and monitor Director Kernel compiler workflows from VS Code.",
+  "publisher": "coherent-light",
+  "version": "0.1.0",
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./extension.cjs",
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:directorKernel.start",
+    "onCommand:directorKernel.stop",
+    "onCommand:directorKernel.restart",
+    "onCommand:directorKernel.status",
+    "onCommand:directorKernel.runTests",
+    "onCommand:directorKernel.openReadme",
+    "onCommand:directorKernel.openProjectRoot"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "directorKernel.start",
+        "title": "Director Kernel: Start"
+      },
+      {
+        "command": "directorKernel.stop",
+        "title": "Director Kernel: Stop"
+      },
+      {
+        "command": "directorKernel.restart",
+        "title": "Director Kernel: Restart"
+      },
+      {
+        "command": "directorKernel.status",
+        "title": "Director Kernel: Status"
+      },
+      {
+        "command": "directorKernel.runTests",
+        "title": "Director Kernel: Run Tests"
+      },
+      {
+        "command": "directorKernel.openReadme",
+        "title": "Director Kernel: Open README"
+      },
+      {
+        "command": "directorKernel.openProjectRoot",
+        "title": "Director Kernel: Open Project Root"
+      }
+    ],
+    "configuration": {
+      "title": "Director Kernel",
+      "properties": {
+        "directorKernel.rootPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to the Director Kernel project root."
+        },
+        "directorKernel.runCommand": {
+          "type": "string",
+          "default": "npm run dev",
+          "description": "Shell command used by 'Director Kernel: Start'."
+        },
+        "directorKernel.testCommand": {
+          "type": "string",
+          "default": "npm test",
+          "description": "Shell command used by 'Director Kernel: Run Tests'."
+        },
+        "directorKernel.autoStart": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically run 'Director Kernel: Start' when VS Code starts."
+        },
+        "directorKernel.showOutputOnStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Focus the extension output channel when starting."
+        }
+      }
+    }
+  }
+}
+

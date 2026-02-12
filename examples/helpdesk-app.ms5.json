@@ -1,0 +1,185 @@
+{
+  "schema_version": "6.0.0",
+  "doc_type": "ms5_example",
+  "ms5": {
+    "id": "HELPDESK-APP-V1",
+    "title": "Helpdesk Ticketing API",
+    "problem": "Need a simple multi-module helpdesk/ticketing REST API with authentication, users, tickets, comments, notifications, and reporting.",
+    "goal": {
+      "start_state": "Empty project directory",
+      "end_state": "Working Node.js/TypeScript helpdesk API with SQLite persistence, modular structure, and basic integration tests"
+    },
+    "product_definition": {
+      "what_it_is": "A minimal helpdesk backend service providing auth, user management, ticket CRUD, comments, notifications, and reporting endpoints.",
+      "what_it_is_not": [
+        "Not a full SaaS with UI",
+        "Not a production-grade identity provider",
+        "Not a message-queue based system"
+      ]
+    },
+    "core_workflow": [
+      "User registers and logs in",
+      "User creates a ticket",
+      "Support agent lists and updates ticket status",
+      "Users add comments to tickets",
+      "System records notifications for ticket events",
+      "Admin retrieves reporting stats"
+    ],
+    "global_config": {
+      "language": "typescript",
+      "runtime": "nodejs",
+      "database": "sqlite",
+      "framework": "express",
+      "auth": "jwt"
+    },
+    "stages": [
+      {
+        "name": "backend",
+        "config": {
+          "port": 3000
+        },
+        "targets": [
+          {
+            "name": "database_schema",
+            "config": {
+              "tables": [
+                "users",
+                "tickets",
+                "comments",
+                "notifications"
+              ]
+            }
+          },
+          {
+            "name": "auth_module",
+            "config": {
+              "routes": [
+                "/auth/register",
+                "/auth/login"
+              ],
+              "token": {
+                "type": "jwt",
+                "expires_in": "1d"
+              }
+            }
+          },
+          {
+            "name": "users_module",
+            "config": {
+              "routes": [
+                "/users",
+                "/users/me"
+              ],
+              "fields": [
+                "id",
+                "email",
+                "password_hash",
+                "role",
+                "created_at"
+              ]
+            }
+          },
+          {
+            "name": "tickets_module",
+            "config": {
+              "routes": [
+                "/tickets",
+                "/tickets/:id"
+              ],
+              "fields": [
+                "id",
+                "title",
+                "description",
+                "status",
+                "priority",
+                "created_by_user_id",
+                "assigned_to_user_id",
+                "created_at",
+                "updated_at"
+              ],
+              "statuses": [
+                "open",
+                "in_progress",
+                "closed"
+              ]
+            }
+          },
+          {
+            "name": "comments_module",
+            "config": {
+              "routes": [
+                "/tickets/:id/comments"
+              ],
+              "fields": [
+                "id",
+                "ticket_id",
+                "author_user_id",
+                "body",
+                "created_at"
+              ]
+            }
+          },
+          {
+            "name": "notifications_module",
+            "config": {
+              "routes": [
+                "/notifications",
+                "/notifications/:id/read"
+              ],
+              "fields": [
+                "id",
+                "user_id",
+                "type",
+                "payload_json",
+                "read_at",
+                "created_at"
+              ]
+            }
+          },
+          {
+            "name": "reporting_module",
+            "config": {
+              "routes": [
+                "/reports/summary"
+              ],
+              "metrics": [
+                "tickets_by_status",
+                "tickets_by_priority",
+                "avg_time_to_close"
+              ]
+            }
+          },
+          {
+            "name": "api_server",
+            "config": {
+              "routes": [
+                "/auth/*",
+                "/users/*",
+                "/tickets/*",
+                "/notifications/*",
+                "/reports/*"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "tests",
+        "targets": [
+          {
+            "name": "integration_tests",
+            "config": {
+              "test_cases": [
+                "register_and_login",
+                "create_ticket",
+                "list_tickets",
+                "add_comment",
+                "report_summary"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

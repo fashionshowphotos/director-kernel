@@ -1,0 +1,30 @@
+{
+  "name": "director-v2",
+  "intent": "Build a robust, agentic AI coding kernel (Director Kernel v2). \n  It transforms human intent into working software through layered constraints (MS5->MS4->MS3->MS2).\n  \n  Key Features:\n  - Content-addressed storage (SHA-256)\n  - Incremental builds via checkpoint caching\n  - Budget controls (warn/pause)\n  - Build state machine with crash recovery\n  - OpenRouter LLM integration\n  \n  Core Modules:\n  - Kernel Orchestrator: Build lifecycle & state machine\n  - Artifact Store: Persistence & CAS\n  - Transform Engine: MS pipeline execution (MS5->MS4->MS3->MS2)\n  - Model Router: LLM API handling with retries\n  - Context Slicer: Bounded context generation",
+  "stages": [
+    {
+      "name": "design",
+      "targets": [
+        {
+          "name": "architecture"
+        }
+      ]
+    },
+    {
+      "name": "contracts",
+      "targets": [
+        {
+          "name": "contracts"
+        }
+      ]
+    },
+    {
+      "name": "implementation",
+      "targets": [
+        {
+          "name": "code"
+        }
+      ]
+    }
+  ]
+}

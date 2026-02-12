@@ -1,0 +1,276 @@
+{
+    "mc_family": {
+        "levels": [
+            {
+                "level": "MC4",
+                "name": "Minimal Orientation",
+                "purpose": "Onboarding + map of what the thing is. Humans + agents can quickly understand the scope and intent.",
+                "answers": [
+                    "What is this?",
+                    "What does it do?",
+                    "What are the key constraints (high level)?",
+                    "What are the main entrypoints?"
+                ],
+                "required_fields": [
+                    "system",
+                    "version",
+                    "one_line_summary",
+                    "key_constraints",
+                    "main_methods"
+                ],
+                "optional_fields": [
+                    "non_goals",
+                    "inputs_outputs_summary",
+                    "dependencies_summary"
+                ],
+                "explicitly_not_included": [
+                    "full method flows",
+                    "fallback logic details",
+                    "formal capabilities list",
+                    "check types/mechanisms",
+                    "invariant scopes/severity",
+                    "class structure",
+                    "telemetry/observability spec"
+                ],
+                "example": {
+                    "system": "DeepSeekRouter",
+                    "version": "2.0.0",
+                    "one_line_summary": "LLM API wrapper with caching, retries, and circuit breaker.",
+                    "key_constraints": [
+                        "No shell access",
+                        "No filesystem persistence",
+                        "Timeout 30s max",
+                        "Max retries 3",
+                        "Never throws (returns error strings)"
+                    ],
+                    "main_methods": [
+                        "generate(prompt, max_tokens, temperature) -> str",
+                        "load(model) -> bool",
+                        "connect(client_id) -> websocket"
+                    ],
+                    "non_goals": [
+                        "Executing OS commands",
+                        "Storing secrets",
+                        "Writing files"
+                    ]
+                }
+            },
+            {
+                "level": "MC3",
+                "name": "Compact Intent Contract",
+                "purpose": "Multi-agent coordination + fast review. Enough structure to prevent regressions.",
+                "answers": [
+                    "What does it do?",
+                    "What must never happen?",
+                    "What constraints are sacred?",
+                    "What methods exist publicly?"
+                ],
+                "required_sections": [
+                    "header",
+                    "DOES",
+                    "USES",
+                    "DENIES",
+                    "CRITICAL",
+                    "METHODS",
+                    "CHECKS"
+                ],
+                "optional_sections": [
+                    "FROZEN",
+                    "NON_GOALS"
+                ],
+                "must_include": [
+                    "security boundary (DENIES list)",
+                    "at least one CRITICAL constraint",
+                    "public interface summary (METHODS)",
+                    "verification intent (CHECKS)"
+                ],
+                "explicitly_not_included": [
+                    "step-by-step flow logic",
+                    "precise fallback terminal conditions",
+                    "deep structure (classes, attributes)",
+                    "full invariant taxonomy beyond CRITICAL",
+                    "full observability spec"
+                ],
+                "example": {
+                    "header": "##MC3:DeepSeekRouter v2.0.0",
+                    "DOES": "LLM text generation router with caching, rate limiting, and circuit breaker.",
+                    "USES": [
+                        {
+                            "capability": "llm_call",
+                            "qualifier": null
+                        },
+                        {
+                            "capability": "network_outbound",
+                            "qualifier": "LIMITED"
+                        },
+                        {
+                            "capability": "caching",
+                            "qualifier": null
+                        },
+                        {
+                            "capability": "async_io",
+                            "qualifier": null
+                        }
+                    ],
+                    "DENIES": [
+                        "subprocess_exec",
+                        "filesystem_write",
+                        "dynamic_imports",
+                        "eval",
+                        "exec"
+                    ],
+                    "CRITICAL": [
+                        "Response < 30s (API_TIMEOUT)",
+                        "Retries <= 3 (MAX_RETRIES)",
+                        "Never raises (returns error string on failure)",
+                        "Circuit breaker opens after 5 failures",
+                        "WebSocket connections <= 100"
+                    ],
+                    "METHODS": [
+                        "generate(prompt, max_tokens, temp) -> str: cached LLM call with retry",
+                        "load(model) -> bool: load and warm model",
+                        "connect(client_id) -> websocket: establish WS (limit enforced)",
+                        "disconnect(client_id) -> void: clean disconnect",
+                        "health() -> dict: router status"
+                    ],
+                    "FROZEN": {
+                        "API_TIMEOUT": "30",
+                        "MAX_RETRIES": "3",
+                        "CIRCUIT_BREAKER": "5",
+                        "MAX_CONNECTIONS": "100"
+                    },
+                    "CHECKS": [
+                        {
+                            "description": "no eval/exec usage",
+                            "type": "MECHANICAL"
+                        },
+                        {
+                            "description": "timeout compliance",
+                            "type": "RUNTIME"
+                        },
+                        {
+                            "description": "security review",
+                            "type": "SEMANTIC"
+                        }
+                    ],
+                    "NON_GOALS": [
+                        "shell execution",
+                        "credential storage",
+                        "file persistence"
+                    ]
+                }
+            },
+            {
+                "level": "MC2",
+                "name": "Standard Behavior Specification",
+                "purpose": "Implementation-ready spec. Human readable and AI-operable. Expandable to MC1 canonical.",
+                "answers": [
+                    "How should it behave?",
+                    "How is security enforced?",
+                    "How do methods flow and fail safely?",
+                    "What is verified mechanically/runtime/semantically?"
+                ],
+                "required_blocks": [
+                    "SYS",
+                    "VER",
+                    "CAPABILITY"
+                ],
+                "typical_blocks": [
+                    "INV",
+                    "THR",
+                    "CON",
+                    "FML",
+                    "MTH",
+                    "CHECK",
+                    "NON_GOALS",
+                    "OBSERVE",
+                    "FROZEN",
+                    "FROZEN_CHECK",
+                    "DRIFT_RULES",
+                    "MIGRATION"
+                ],
+                "must_include": [
+                    "capabilities with qualifiers",
+                    "method contracts",
+                    "flow per method",
+                    "fallback definition per risky method",
+                    "checks with enforcement type"
+                ],
+                "example": {
+                    "mc2_text": [
+                        "##MC:SYS DeepSeekRouter",
+                        "##MC:VER 2.0.0",
+                        "",
+                        "##MC:CAPABILITY",
+                        "- llm_call",
+                        "- network_outbound [LIMITED]",
+                        "- caching",
+                        "- subprocess_exec [DENY]",
+                        "- filesystem_write [DENY]",
+                        "- dynamic_imports [DENY]",
+                        "##MC:END",
+                        "",
+                        "##MC:THR API_TIMEOUT = 30.0",
+                        "##MC:CON MAX_RETRIES = 3",
+                        "##MC:CON CIRCUIT_BREAKER_THRESHOLD = 5",
+                        "",
+                        "##MC:INV CORE",
+                        "- [CRITICAL] Response time < API_TIMEOUT",
+                        "- [CRITICAL] Retry count <= MAX_RETRIES",
+                        "- [WARN] Cache hit rate >= 70%",
+                        "##MC:END",
+                        "",
+                        "##MC:MTH generate(prompt, max_tokens, temperature) -> str",
+                        "  ##MC:CONTRACT Returns generated text, never raises (returns error string)",
+                        "  ##MC:FLOW",
+                        "  1. Validate prompt",
+                        "  2. Check cache -> return if hit",
+                        "  3. Call API -> return result",
+                        "  ##MC:FALLBACK api_error",
+                        "    Return error string",
+                        "    TERMINAL: RETURN",
+                        "##MC:END",
+                        "",
+                        "##MC:CHECK",
+                        "- [MECHANICAL] No eval/exec usage",
+                        "- [MECHANICAL] No subprocess calls",
+                        "- [RUNTIME] Returns within API_TIMEOUT",
+                        "- [SEMANTIC] Security review of outbound API calls",
+                        "##MC:END",
+                        "",
+                        "##MC:NON_GOALS",
+                        "- Shell execution",
+                        "- Credential storage",
+                        "- Persistent filesystem writes",
+                        "##MC:END"
+                    ]
+                }
+            }
+        ],
+        "conversion_rules_summary": {
+            "MC4_to_MC3": [
+                "Extract purpose -> DOES",
+                "Translate 'No X' -> DENIES",
+                "Extract numeric constraints -> CRITICAL + FROZEN",
+                "Enumerate entrypoints -> METHODS",
+                "Add CHECKS: at least 1 mechanical + 1 runtime/semantic"
+            ],
+            "MC3_to_MC2": [
+                "Header -> SYS + VER",
+                "USES + DENIES -> CAPABILITY (+ [DENY])",
+                "CRITICAL -> INV blocks with [CRITICAL]",
+                "METHODS -> MTH skeletons (CONTRACT + FLOW placeholders)",
+                "CHECKS -> CHECK block",
+                "FROZEN -> THR/CON plus FROZEN block"
+            ],
+            "MC2_to_MC3": [
+                "Summarize system intent -> DOES",
+                "Collapse capabilities -> USES + DENIES",
+                "Promote CRITICAL invariants -> CRITICAL list",
+                "Summarize method contracts -> METHODS",
+                "Collect frozen sacred values -> FROZEN",
+                "Collapse CHECK block -> CHECKS list"
+            ]
+        }
+    }
+}

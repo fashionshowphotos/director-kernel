@@ -1,0 +1,25 @@
+Build a small HTTP service with:
+- GET /health -> { ok: true }
+- GET /hash?value=... -> returns sha256 hex of value
+- Rate limit: 10 req/min per IP
+- Log every request (method, path, status, latency_ms)
+
+Configuration:
+- PORT from env (default 3000)
+- RATE_LIMIT from env (default 10)
+
+Error handling:
+- 400 Bad Request if value param missing on /hash
+- 429 Too Many Requests if rate limited
+- 500 Internal Server Error with logged stack trace
+
+Startup/Shutdown:
+- Log "Server started on port X" on startup
+- Handle SIGTERM/SIGINT for graceful shutdown
+- Close connections before exit
+
+Input validation:
+- value param must be non-empty string
+- Reject requests with invalid paths (404)
+
+Include tests for all endpoints and error cases.

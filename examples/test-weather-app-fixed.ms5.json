@@ -1,0 +1,36 @@
+{
+  "name": "weather-app-test",
+  "intent": "Build a simple weather dashboard that fetches current weather data from OpenWeather API and displays it in a web interface. Users can search by city name and see temperature, conditions, and humidity.",
+  "global_config": {
+    "language": "typescript",
+    "runtime": "nodejs",
+    "framework": "express",
+    "port": 3000
+  },
+  "stages": [
+    {
+      "name": "design",
+      "targets": [
+        {
+          "name": "architecture"
+        }
+      ]
+    },
+    {
+      "name": "contracts",
+      "targets": [
+        {
+          "name": "api_contracts"
+        }
+      ]
+    },
+    {
+      "name": "implementation",
+      "targets": [
+        {
+          "name": "code"
+        }
+      ]
+    }
+  ]
+}

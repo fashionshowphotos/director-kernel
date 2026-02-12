@@ -1,0 +1,87 @@
+{
+    "schema_version": "6.0.0",
+    "doc_type": "ms5_example",
+    "ms5": {
+        "id": "TODO-APP-V1",
+        "title": "Simple Todo Application",
+        "problem": "Need a basic todo list manager that works offline-first with a simple REST API",
+        "goal": {
+            "start_state": "Empty project directory",
+            "end_state": "Working Node.js todo app with SQLite persistence and REST endpoints"
+        },
+        "product_definition": {
+            "what_it_is": "A minimal todo list web service with CRUD operations",
+            "what_it_is_not": [
+                "Not a full-featured SaaS platform",
+                "Not a mobile app",
+                "Not a multi-user system (single user)"
+            ]
+        },
+        "core_workflow": [
+            "User starts server",
+            "User creates todo via POST /todos",
+            "User lists todos via GET /todos",
+            "User marks complete via PATCH /todos/:id",
+            "User deletes via DELETE /todos/:id"
+        ],
+        "global_config": {
+            "language": "typescript",
+            "runtime": "nodejs",
+            "database": "sqlite",
+            "framework": "express"
+        },
+        "stages": [
+            {
+                "name": "backend",
+                "config": {
+                    "port": 3000
+                },
+                "targets": [
+                    {
+                        "name": "database_schema",
+                        "config": {
+                            "tables": [
+                                "todos"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "api_server",
+                        "config": {
+                            "routes": [
+                                "/todos"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "todo_model",
+                        "config": {
+                            "fields": [
+                                "id",
+                                "title",
+                                "completed",
+                                "created_at"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "tests",
+                "targets": [
+                    {
+                        "name": "integration_tests",
+                        "config": {
+                            "test_cases": [
+                                "create",
+                                "read",
+                                "update",
+                                "delete"
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

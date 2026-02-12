@@ -1,0 +1,31 @@
+{
+    "project": "Discord Notifier Plugin",
+    "version": "1.0.0",
+    "intent": "Create a Node.js utility that listens for 'EXECUTION_FAILED' status in the Director Kernel and sends a notification to a Discord webhook. The utility should read the webhook URL from an environment variable 'DISCORD_WEBHOOK_URL'. It must include error handling and a clean, formatted embed for the message.",
+    "stages": [
+        {
+            "name": "design",
+            "targets": [
+                {
+                    "name": "architecture"
+                }
+            ]
+        },
+        {
+            "name": "contracts",
+            "targets": [
+                {
+                    "name": "contracts"
+                }
+            ]
+        },
+        {
+            "name": "implementation",
+            "targets": [
+                {
+                    "name": "code"
+                }
+            ]
+        }
+    ]
+}

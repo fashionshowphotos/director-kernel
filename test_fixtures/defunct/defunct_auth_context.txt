@@ -1,0 +1,4 @@
+JWT details:
+- Use HS256
+- Secret from env JWT_SECRET
+- Token TTL 3600 seconds
