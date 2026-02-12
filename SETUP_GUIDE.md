@@ -7,8 +7,8 @@ Your Director Kernel installation is **fully functional** and ready to use!
 ### What's Working:
 - ✅ Core kernel compiled successfully
 - ✅ All dependencies installed (main + UI backend + UI frontend)
-- ✅ Database initialized at `C:\Users\new\.director\kernel.db`
-- ✅ Artifacts directory created at `C:\Users\new\.director\artifacts`
+- ✅ Database initialized at `%USERPROFILE%\.director\kernel.db`
+- ✅ Artifacts directory created at `%USERPROFILE%\.director\artifacts`
 - ✅ OpenRouter API key configured
 - ✅ CLI commands operational
 - ✅ UI components ready to launch
@@ -126,13 +126,13 @@ Director will:
 ## 🔧 Configuration
 
 ### Config File Location
-`C:\Users\new\.director\config.json`
+`%USERPROFILE%\.director\config.json`
 
 Current configuration:
 ```json
 {
-  "dbPath": "C:\\Users\\new\\.director\\kernel.db",
-  "artifactRoot": "C:\\Users\\new\\.director\\artifacts",
+  "dbPath": "%USERPROFILE%\\.director\\kernel.db",
+  "artifactRoot": "%USERPROFILE%\\.director\\artifacts",
   "apiKey": "sk-or-v1-..." 
 }
 ```
@@ -212,7 +212,7 @@ node dist/cli.js status
 **Solution**: Run `node dist/cli.js init` first
 
 ### Issue: "API key not configured"
-**Solution**: Check `C:\Users\new\.director\config.json` has valid `apiKey`
+**Solution**: Check `%USERPROFILE%\.director\config.json` has valid `apiKey`
 
 ### Issue: UI won't start
 **Solution**: 
