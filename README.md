@@ -1,6 +1,7 @@
 # Director Kernel v6
 
 **Intent compiler that transforms human intent into working software through layered constraints (MS5→MS4→MS3→MS2)**
+**Keywords:** AI compiler, intent-to-code, LLM code generation, TypeScript compiler, prompt-to-code, software architecture constraints, governed code generation
 **License:** Free for non-commercial use; paid license required for commercial use
 
 ## Architecture
